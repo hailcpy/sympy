@@ -454,6 +454,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=S.Reals, cont
         function_range)
     from sympy.solvers.solvers import denoms
     from sympy.solvers.solveset import solvify, solveset
+    from sympy.core.numbers import Float
 
     # This keeps the function independent of the assumptions about `gen`.
     # `solveset` makes sure this function is called only when the domain is
@@ -520,6 +521,10 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=S.Reals, cont
                 # this might raise ValueError on its own
                 # or it might give None...
                 solns = solvify(e, gen, domain)
+                # fix for expr x > 0.0 which gives solns [0] rather than [0.0] later causing
+                # problem with equation x > 0 and x > 0.0
+                if any(i.is_Float for i in expr.args):
+                    solns = [Float(i) for i in solns]
                 if solns is None:
                     # in which case we raise ValueError
                     raise ValueError
